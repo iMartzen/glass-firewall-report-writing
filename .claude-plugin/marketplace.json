@@ -1,0 +1,15 @@
+{
+  "name": "glass-firewall-report-writing",
+  "owner": {
+    "name": "Martzen",
+    "url": "https://github.com/iMartzen"
+  },
+  "description": "Report review tooling from the Glass Firewall 2026 Report Writing workshop.",
+  "plugins": [
+    {
+      "name": "report-review",
+      "source": "./plugins/report-review",
+      "description": "Reviews a draft bug bounty or vulnerability report like an honest triager. Asks questions, flags gaps and never invents technical details."
+    }
+  ]
+}

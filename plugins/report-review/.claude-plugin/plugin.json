@@ -1,0 +1,12 @@
+{
+  "name": "report-review",
+  "description": "Reviews a draft bug bounty or vulnerability report like an honest triager. Asks questions, flags gaps and never invents technical details.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Martzen"
+  },
+  "homepage": "https://github.com/iMartzen/glass-firewall-report-writing",
+  "repository": "https://github.com/iMartzen/glass-firewall-report-writing",
+  "license": "MIT",
+  "keywords": ["bug-bounty", "vulnerability-report", "report-writing", "review"]
+}

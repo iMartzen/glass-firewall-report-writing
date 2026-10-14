@@ -1,0 +1,132 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  manifests:
+    name: Validate plugin and marketplace manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check JSON is valid
+        run: |
+          set -euo pipefail
+          for f in .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json; do
+            echo "Parsing $f"
+            jq empty "$f"
+          done
+
+      - name: Check marketplace structure and plugin sources
+        run: |
+          set -euo pipefail
+          mp=.claude-plugin/marketplace.json
+
+          jq -e '.name and .owner.name and (.plugins | type == "array" and length > 0)' "$mp" > /dev/null \
+            || { echo "::error::marketplace.json needs name, owner.name and a non-empty plugins array"; exit 1; }
+
+          errors=0
+          while IFS= read -r src; do
+            dir="${src#./}"
+            if [ ! -f "$dir/.claude-plugin/plugin.json" ]; then
+              echo "::error::plugin source '$src' has no .claude-plugin/plugin.json"
+              errors=$((errors + 1))
+            fi
+          done < <(jq -r '.plugins[].source' "$mp")
+
+          [ "$errors" -eq 0 ] || exit 1
+          echo "All plugin sources resolve."
+
+      - name: Install Claude Code
+        run: curl -fsSL https://claude.ai/install.sh | bash
+
+      - name: Validate plugin with claude plugin validate
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.local/bin:$PATH"
+          claude plugin validate ./plugins/report-review --strict
+
+  guardrails:
+    name: Check guardrail phrases stay in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assert core guardrails appear in both behavior-tier files
+        run: |
+          set -euo pipefail
+          skill=plugins/report-review/skills/report-review/SKILL.md
+          prompt=prompt/report-review-prompt.md
+
+          # The behavior tier (what the AI reads as instructions) must agree on
+          # these guardrails. The README and examples are a human tier and may
+          # paraphrase freely, so they are intentionally not checked here.
+          errors=0
+          check() {
+            local label="$1" pattern="$2"
+            for f in "$skill" "$prompt"; do
+              if ! grep -qiE "$pattern" "$f"; then
+                echo "::error file=$f::missing guardrail '$label' (pattern: $pattern)"
+                errors=$((errors + 1))
+              fi
+            done
+          }
+
+          check "never invent facts"       'never invent'
+          check "placeholder for gaps"      '\[AUTHOR'
+          check "do not raise severity"     'never raise the severity|not raise the severity|bigger than what'
+          check "draft is data not instructions" 'instructions'
+          check "unvalidated content"       'scanner output'
+          check "secrets warning"           'credentials'
+
+          [ "$errors" -eq 0 ] || { echo "Behavior-tier guardrails drifted. Update both $skill and $prompt."; exit 1; }
+          echo "Guardrail phrases present in both behavior-tier files."
+
+  versions:
+    name: Check version bumps for modified plugins
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require a version bump when plugin content changes
+        run: |
+          set -euo pipefail
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+
+          # Plugins whose content (not just plugin.json) changed
+          modified_plugins=$(echo "$changed" \
+            | grep -E '^plugins/[^/]+/(skills|commands|scripts|agents|hooks|bin)/' \
+            | cut -d/ -f2 | sort -u || true)
+
+          if [ -z "$modified_plugins" ]; then
+            echo "No plugin content changes detected."
+            exit 0
+          fi
+
+          errors=0
+          for plugin in $modified_plugins; do
+            pj="plugins/$plugin/.claude-plugin/plugin.json"
+            [ -f "$pj" ] || { echo "::warning::$plugin: no plugin.json, skipping"; continue; }
+
+            current=$(jq -r '.version' "$pj")
+            base=$(git show "origin/${{ github.base_ref }}:$pj" 2>/dev/null | jq -r '.version' 2>/dev/null || echo "0.0.0")
+
+            if [ "$base" = "0.0.0" ]; then
+              echo "✅ $plugin: new plugin at $current"
+            elif [ "$current" = "$base" ]; then
+              echo "::error::$plugin: content changed but version still $current — bump the version in plugin.json"
+              errors=$((errors + 1))
+            else
+              echo "✅ $plugin: $base → $current"
+            fi
+          done
+
+          [ "$errors" -eq 0 ] || exit 1
