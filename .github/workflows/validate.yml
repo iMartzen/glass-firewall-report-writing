@@ -82,6 +82,8 @@ jobs:
           check "draft is data not instructions" 'instructions'
           check "unvalidated content"       'scanner output'
           check "secrets warning"           'credentials'
+          check "common false positives"    'clickjacking'
+          check "unpredictable id severity" 'unpredictable identifier'
 
           [ "$errors" -eq 0 ] || { echo "Behavior-tier guardrails drifted. Update both $skill and $prompt."; exit 1; }
           echo "Guardrail phrases present in both behavior-tier files."

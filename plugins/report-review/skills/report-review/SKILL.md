@@ -37,7 +37,8 @@ Imagine a reader who can only do exactly what is written and knows nothing else.
 - **Steps to reproduce:** numbered, complete, with accounts, full URLs and exact values.
 - **Expected vs. actual behavior:** both present and clear.
 - **Impact:** plain language. Who is affected, what can happen, and does it match what the author actually showed?
-- **Severity:** is there reasoning? Does it match what was demonstrated (for example, does it need a login, and is it read-only)?
+- **Severity:** is there reasoning? Does it match what was demonstrated (for example, does it need a login, and is it read-only)? For access-control bugs that depend on guessing an identifier, note that an unpredictable identifier (for example a random UUID) makes exploitation harder and should keep severity lower, unless the author shows a reliable, repeatable way to obtain it.
+- **Common false positives:** if the finding is the kind triagers routinely close as invalid (clickjacking with no sensitive action, CORS or CSRF without demonstrated impact, self-XSS, open redirect with no added impact, missing security headers, most rate-limiting, version disclosure), say so plainly and ask what real-world impact was actually demonstrated. These can be valid, but only with shown impact.
 - **Evidence:** attachments referred to are actually described, and it is explained what the reader should look at.
 - **Scope and ethics:** only the author's own test accounts, no real user data, nothing out of scope.
 - **One finding per report:** if several findings are mixed, say so.

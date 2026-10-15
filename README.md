@@ -67,6 +67,8 @@ tier on purpose; do not treat small differences as drift.
 - "See attachment" without an attachment
 - Testing on real users or out of scope
 
+For the findings that are usually closed as invalid, and the severity mistakes that cost people credibility, see [`common-pitfalls.md`](assets/common-pitfalls.md).
+
 ## Template
 
 Copy this and fill it in with what you **saw yourself**.
@@ -156,6 +158,10 @@ Then use it with `/report-review` and paste your draft. This copy does not updat
 Three reports about the same fictional bug (a polished one, a dramatic one and a strong one): [`examples.md`](assets/examples.md)
 
 Want to try the reviewer live? Each report is also a standalone file you can paste straight in: [`report-1-polished.md`](assets/drafts/report-1-polished.md), [`report-2-dramatic.md`](assets/drafts/report-2-dramatic.md), [`report-3-strong.md`](assets/drafts/report-3-strong.md).
+
+## Further reading
+
+Two common ways a report fails: it describes a finding that triagers routinely close as invalid, or it claims a severity the author cannot defend. [`common-pitfalls.md`](assets/common-pitfalls.md) distills both into portable principles. If you report on HackerOne, the authoritative and current source is HackerOne's own [core ineligible findings](https://docs.hackerone.com/en/articles/8494488-core-ineligible-findings) and [detailed platform standards](https://docs.hackerone.com/en/articles/8369826-detailed-platform-standards).
 
 ## Pro tips
 
