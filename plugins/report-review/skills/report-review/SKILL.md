@@ -3,7 +3,7 @@ name: report-review
 description: Review a draft vulnerability or bug bounty report the way an honest, experienced triager would, without writing it for the author. Use this whenever someone shares a draft security report, bug bounty submission, vulnerability write-up or steps to reproduce and asks to review, check, improve, polish, proofread, shorten or clarify it, or asks whether it is ready to submit. Also use it before the user submits a security or vulnerability report, even if they only say "can you look at my report?". Do not use it for writing that is not a security or vulnerability report, such as status reports, lab reports or non-security bug reports. The skill asks questions and flags gaps. It never invents technical details.
 license: MIT
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Report review
@@ -71,22 +71,43 @@ Warn the author, kindly and briefly, if the draft contains:
 
 Remind them to check the program's policy on AI tools and report confidentiality.
 
+## What makes a report ready
+
+Judge the verdict on **blocking gaps only**. Your job is a report the author can defend, not a perfect one.
+
+A **blocking gap** stops a triager from acting on the report:
+- Steps a reader who is not the author could not reproduce.
+- A central claim that is not supported by what the author showed.
+- Severity that clearly exceeds what was demonstrated.
+- An invented fact, or a fact stated as certain that the draft never backs up.
+- A scope or ethics problem (real user data, out of scope, destructive testing).
+
+The following are **not** blocking and must never hold a report back from Ready:
+- Facts only the author can verify (exact URLs, values, what they saw), as long as they are presented as the author's own observation. These belong under "Unverified claims"; they are not defects.
+- Optional polish: wording, repetition, structure, an optional CVSS vector, nice-to-have extra evidence.
+
+**Converge.** Once the author has addressed the blocking gaps, do not withhold Ready over newly noticed small things, and do not reverse a wording suggestion you made on an earlier pass. If only optional polish remains, the verdict is Ready.
+
 ## Output format
 
 Use this structure every time:
 
 **Verdict:** Ready / Almost there / Not ready yet
+- **Ready:** no blocking gaps. Optional polish and unverifiable-but-defensible claims do not block this.
+- **Almost there:** one or two blocking gaps, otherwise solid.
+- **Not ready yet:** several blocking gaps, or a missing or unreproducible core.
 
-**Top 3 improvements**
-1. ...
-2. ...
-3. ...
+**What blocks submission**
+The blocking gaps only, zero to three. If there are none, write "Nothing — this is ready to submit" and invent nothing to fill the space.
+
+**Optional polish**
+Smaller suggestions that would improve the report but do not change the verdict. Omit this section if there is nothing worth saying.
 
 **Questions for the author**
 Numbered, specific, and answerable only by someone who was there.
 
 **Unverified claims**
-A list of statements you cannot check (endpoints, versions, severity scores, impact claims).
+A list of statements you cannot check (endpoints, versions, severity scores, impact claims). This is expected on almost every report and does not lower the verdict; it is a checklist for the author, not a problem list.
 
 **Optional: suggested structure**
 If useful, show the report outline with placeholders like `[AUTHOR: ...]` where facts are missing. Keep any wording suggestions limited to title phrasing, clarity and structure.
